@@ -1,33 +1,6 @@
-"""
- * Copyright 2020, Departamento de sistemas y Computación
- * Universidad de Los Andes
- *
- *
- * Desarrolado para el curso ISIS1225 - Estructuras de Datos y Algoritmos
- *
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * Contribución de:
- *
- * Dario Correal
- *
- """
-
-
 import sys
-import threading
-from App import logic
+import App.logic as logic
+# TODO Realice la importación de lista como estructura de datos auxiliar para la presentación de los resultados
 
 """
 La vista se encarga de la interacción con el usuario.
@@ -35,62 +8,60 @@ Presenta el menu de opciones  y  por cada seleccion
 hace la solicitud al controlador para ejecutar la
 operación seleccionada.
 """
+#  -------------------------------------------------------------
+# Funciones para la carga de datos
+#  -------------------------------------------------------------
 
-# ___________________________________________________
-#  Variables
-# ___________________________________________________
+def new_logic():
+    """
+    Se crea una instancia del controlador
+    """
+    control = logic.new_logic()
+    return control
 
-
-servicefile = 'bus_routes_14000.csv'
-initialStation = None
 
 # ___________________________________________________
 #  Menu principal
 # ___________________________________________________
-
 
 def print_menu():
     print("\n")
     print("*******************************************")
     print("Bienvenido")
     print("1- Inicializar Analizador")
-    print("2- Cargar información de buses de singapur")
+    print("2- Cargar información de buses de singapur y crear MinPQ")
+    print("3- Atender la siguiente ruta con mayor prioridad")
     print("0- Salir")
     print("*******************************************")
-
-
-def option_two(cont):
-    print("\nCargando información de transporte de singapur ....")
-    logic.load_services(cont, servicefile)
- 
-
 
 """
 Menu principal
 """
 
-
 def main():
     working = True
+    routesfile = 'bus_routes_14000.csv'
     while working:
         print_menu()
         inputs = input('Seleccione una opción para continuar\n>')
 
         if int(inputs[0]) == 1:
             print("\nInicializando....")
-            # cont es el controlador que se usará de acá en adelante
-            cont = logic.init()
-
+            control = new_logic()
         elif int(inputs[0]) == 2:
-            option_two(cont)
+            print("\nCargando información de rutas de buses....")
+            logic.load_data(control, routesfile)
+            print('Registros cargados: ' + str(logic.stops_size(control)))
+            print('Elementos en la cola de prioridad: ' + str(logic.pq_size(control)))
+            print('Ruta con mayor prioridad: ' + str(logic.pq_first(control)))
+        elif int(inputs[0]) == 3:
+            print("\nObteniendo la ruta con mayor prioridad: ")
+            route = logic.get_next_route(control)
+            if route:
+                print('Ruta ID: ' + str(route['route_id']) + ', Dirección: ' + str(route['direction']) + ', Prioridad: ' + str(route['priority']))
+                print('Elementos restantes en la cola de prioridad: ' + str(logic.pq_size(control)))
+            else:
+                print('No hay rutas en la cola de prioridad.')
         else:
-            working = False
-            print("Saliendo...")
+            sys.exit(0)
     sys.exit(0)
-
-
-if __name__ == "__main__":
-    threading.stack_size(67108864)  # 64MB stack
-    sys.setrecursionlimit(2 ** 20)
-    thread = threading.Thread(target=main)
-    thread.start()

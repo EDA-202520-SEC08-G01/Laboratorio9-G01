@@ -28,99 +28,141 @@ import csv
 import time
 import os
 
-data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/'
+# TODO Realice la importación de priority queue
+# TODO Realice la importación de ArrayList (al) o SingleLinked (sl) como estructura de datos auxiliar para sus requerimientos
 
 
-# ___________________________________________________
-#  Importaciones
-# ___________________________________________________
-
-from DataStructures.Graph import adj_list_graph as gr
-from DataStructures.Map import map_linear_probing as m
-from DataStructures.List import single_linked_list as lt
-from DataStructures.Priority_queue  import priority_queue as pq
-"""
-El controlador se encarga de mediar entre la vista y el modelo.
-Existen algunas operaciones en las que se necesita invocar
-el modelo varias veces o integrar varias de las respuestas
-del modelo en una sola respuesta.  Esta responsabilidad
-recae sobre el controlador.
-"""
-
-# ___________________________________________________
-#  Inicializacion del catalogo
-# ___________________________________________________
+data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/singapur_bus_routes/'
 
 
-def init():
+def new_logic():
+    """Inicializa el analizador.
+
+    stops: Lista para guardar las paradas de bus (array_list)
+    routes_pq: Cola de prioridad para gestionar las rutas de bus (priority_queue)
+
+    Returns:
+        dict: Analizador con las claves 'stops' y 'routes_pq' inicializadas a None.
     """
-    Llama la funcion de inicializacion  del modelo.
-    """
-    # analyzer es utilizado para interactuar con el modelo
-    analyzer = new_analyzer()
+    analyzer = {
+        'stops': None,
+        'routes_pq': None
+    }
+    
+    analyzer['stops'] = None #TODO completar la creación de la lista
+    analyzer['routes_pq'] = None #TODO completar la creación de la cola de prioridad
+
     return analyzer
 
-def new_analyzer():
-    """ Inicializa el analizador
-
-   stops: Tabla de hash para guardar los vertices del grafo
-   connections: Grafo para representar las rutas entre estaciones
-   components: Almacena la informacion de los componentes conectados
-   paths: Estructura que almancena los caminos de costo minimo desde un
-           vertice determinado a todos los otros vértices del grafo
-    """
-    try:
-        analyzer = {
-            'stops': None,
-            'connections': None,
-            'components': None,
-            'paths': None
-        }
-
-     
-
-        # ___________________________________________________
-        #  TODO crear la cola de prioriad y cree las funciones 
-        # necesarias para la carga de datos
-        # ___________________________________________________
-
-        return analyzer
-    except Exception as exp:
-        return exp
-
 # ___________________________________________________
-#  TODO Funciones para la carga de datos y almacenamiento
+#  Funciones para la carga de datos y almacenamiento
 #  de datos en los modelos
 # ___________________________________________________
 
 
-def load_services(file):
-     
-
-
-
-
-    
-
-#Funciones para la medición de tiempos
-
-def get_time():
+def load_data(analyzer, file):
     """
-    devuelve el instante tiempo de procesamiento en milisegundos
+    Carga los datos de los archivos CSV en el modelo
     """
-    return float(time.perf_counter()*1000)
+    file = data_dir + file
+    input_file = csv.DictReader(open(file, encoding="utf-8"),
+                                delimiter=",")
+    for stop in input_file:
+        add_stop(analyzer, stop)
+    return analyzer
 
-def delta_time(end, start):
+
+def add_stop(analyzer, stop):
     """
-    devuelve la diferencia entre tiempos de procesamiento muestreados
+    Adiciona una parada al analizador.
+
+    Parámetros:
+    ------------
+    analyzer : dict
+        Estructura de datos principal del analizador que contiene, entre otros,
+        la lista de paradas ('stops') y la cola de prioridad ('pq').
+    stop : dict
+        Información completa de una parada de bus, que incluye al menos los campos:
+        - ServiceNo: número de la ruta del bus
+        - Direction: dirección del recorrido (1 o 2)
+        - StopSequence: número de secuencia de la parada en la ruta
+        - WD_FirstBus: hora de salida del primer bus en día laboral
+        (además de otros datos complementarios)
     """
-    elapsed = float(end - start)
-    return elapsed
+
+    # Agregar la parada a la lista general de paradas
+    al.add_last(analyzer['stops'], stop)
+
+    # TODO: Adicionar nuevo elemento a la cola de prioridad.
+    # Para agregar un elemento a la cola de prioridad tener en cuenta las paradas
+    # cuyo StopSequence sea igual a 1. 
+    # La prioridad debe ser el valor de 'WD_FirstBus' y el valor asociado debe ser
+    # un diccionario con la siguiente estructura:
+    # {
+    #   'route_id': stop['ServiceNo'],
+    #   'direction': stop['Direction'],
+    #   'priority': stop['WD_FirstBus']
+    # }
+    # Ejemplo:
+    # if stop['StopSequence'] == 1:
+    #     element = {
+    #         'route_id': stop['ServiceNo'],
+    #         'direction': stop['Direction'],
+    #         'priority': stop['WD_FirstBus']
+    #     }
+    #     pq.insert(analyzer['pq'], element['priority'], element)
+
+    return analyzer
 
 
+# ___________________________________________________
+#  Funciones de consulta
+# ___________________________________________________
 
+def stops_size(analyzer):
+    """
+    Obtener el número de paradas de bus
+    """
+    return al.size(analyzer['stops'])
 
+def pq_size(analyzer):
+    """
+    Obtener el número de elementos en la cola de prioridad
+    """
+    return pq.size(analyzer['routes_pq'])
 
+def pq_first(analyzer):
+    """
+    Obtener el primer elemento en la cola de prioridad
+    """
+    return pq.get_first_priority(analyzer['routes_pq'])
 
+def get_next_route(analyzer):
+    """
+    Atiende la cola de prioridad del analizador.
 
+    Esta función consulta la ruta con mayor prioridad (es decir, la de menor valor 
+    de 'WD_FirstBus'), la elimina de la cola de prioridad y retorna la información 
+    de dicha ruta.
+
+    Parámetros:
+    ------------
+    analyzer : dict
+        Estructura de datos principal del analizador que contiene, entre otros,
+        la cola de prioridad ('pq') con las rutas pendientes de procesar.
+
+    """
+
+    # TODO: completar la función.
+    # Pasos a seguir:
+    # 1. Consultar el elemento con mayor prioridad en la cola (sin eliminarlo) usando pq.min(analyzer['pq'])
+    # 2. Eliminar ese elemento de la cola usando pq.delMin(analyzer['pq'])
+    # 3. Retornar la ruta obtenida en el paso 1
+    #
+    # Ejemplo:
+    # next_route = pq.min(analyzer['pq'])
+    # pq.delMin(analyzer['pq'])
+    # return next_route
+
+    pass
 
