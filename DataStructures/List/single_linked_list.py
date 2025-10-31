@@ -1,4 +1,4 @@
-from DataStructures.List import list_node as ns
+import list_node as ns
 
 
 def new_list():
