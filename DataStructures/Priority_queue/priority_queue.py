@@ -64,3 +64,77 @@ def insert(my_heap, priority_value, value):
 
 def is_empty(my_heap):
     return my_heap["size"] == 0
+
+def size(my_heap):
+    return my_heap["size"]
+
+def get_first_priority(my_heap):
+    if is_empty(my_heap):
+        return None
+    first = al.get_element(my_heap["elements"], 1)
+    return pqe.get_priority(first)
+
+def sink(my_heap, pos):
+    size = my_heap["size"]
+
+    while 2 * pos <= size:
+        left_child_pos = 2 * pos
+        right_child_pos = 2 * pos + 1
+
+        current_element = al.get_element(my_heap["elements"], pos)
+        left_child_element = al.get_element(my_heap["elements"], left_child_pos)
+
+        if right_child_pos <= size:
+            right_child_element = al.get_element(my_heap["elements"], right_child_pos)
+
+            if priority(my_heap, left_child_element, right_child_element):
+                selected_child_pos = right_child_pos
+                selected_child_element = right_child_element
+            else:
+                selected_child_pos = left_child_pos
+                selected_child_element = left_child_element
+        else:
+            selected_child_pos = left_child_pos
+            selected_child_element = left_child_element
+
+        if priority(my_heap, current_element, selected_child_element):
+            break
+
+        al.change_info(my_heap["elements"], pos, selected_child_element)
+        al.change_info(my_heap["elements"], selected_child_pos, current_element)
+
+        pos = selected_child_pos
+
+def remove(my_heap):
+    if is_empty(my_heap):
+        return None
+
+    first_element = al.get_element(my_heap["elements"], 1)
+    last_element = al.get_element(my_heap["elements"], my_heap["size"])
+
+    al.change_info(my_heap["elements"], 1, last_element)
+    al.remove_last(my_heap["elements"])
+
+    my_heap["size"] -= 1
+
+    sink(my_heap, 1)
+
+    return pqe.get_value(first_element)
+
+def contains(my_heap, value):
+    for i in range(1, my_heap["size"] + 1):
+        current_element = al.get_element(my_heap["elements"], i)
+        if pqe.get_value(current_element) == value:
+            return True
+    return False
+
+def is_present_value(my_heap, value):
+    if is_empty(my_heap):
+        return -1
+
+    for i in range(1, my_heap["size"] + 1):
+        current_element = al.get_element(my_heap["elements"], i)
+        if pqe.get_value(current_element) == value:
+            return i
+
+    return -1
