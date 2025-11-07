@@ -138,3 +138,28 @@ def is_present_value(my_heap, value):
             return i
 
     return -1
+
+def exchange(my_heap, pos_a, pos_b):
+    element_a = al.get_element(my_heap["elements"], pos_a)
+    element_b = al.get_element(my_heap["elements"], pos_b)
+
+    al.change_info(my_heap["elements"], pos_a, element_b)
+    al.change_info(my_heap["elements"], pos_b, element_a)
+
+def improve_priority(my_heap, priority_value, value):
+    pos = is_present_value(my_heap, value)
+    if pos == -1:
+        return -1
+
+    current_element = al.get_element(my_heap["elements"], pos)
+    current_priority = pqe.get_priority(current_element)
+
+    if priority_value >= current_priority:
+        return -1
+
+    new_element = pqe.new_pq_entry(priority_value, value)
+    al.change_info(my_heap["elements"], pos, new_element)
+
+    swim(my_heap, pos)
+
+    return pos
